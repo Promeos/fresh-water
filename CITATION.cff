@@ -4,7 +4,7 @@ message: >-
   If you use this software or its data outputs, please cite it
   using the metadata from this file.
 type: software
-version: "1.0.1"
+version: "1.0.2"
 date-released: "2026-03-22"
 abstract: >-
   Satellite-based freshwater monitoring dashboard for the United
@@ -16,7 +16,9 @@ abstract: >-
   stable, moderate, or severe based on long-term water storage
   trends measured by satellite gravimetry.
 authors:
-  - alias: Promeos
+  - given-names: Christopher
+    family-names: Ortiz
+    alias: Promeos
     url: https://github.com/Promeos
 repository-code: https://github.com/Promeos/fresh-water
 url: https://promeos.github.io/fresh-water/
