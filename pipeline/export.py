@@ -116,17 +116,7 @@ def export_for_frontend(results: dict | None = None, output_dir: Path = DATA_DIR
 
 
 def _export_counties(results: dict, output_dir: Path):
-    """
-    Build and write ``counties.json`` as a GeoJSON FeatureCollection.
-
-    For each county, averages the TWS trend (cm/year) across the 0.5-degree
-    grid cells that fall within the county's bounding box.  Classifies
-    water stress using the same thresholds as the state-level analysis:
-
-        - *severe*:   TWS trend < -1.5 cm/year
-        - *moderate*: TWS trend < -0.5 cm/year
-        - *stable*:   TWS trend >= -0.5 cm/year
-    """
+    """Build and write ``counties.json`` as a GeoJSON FeatureCollection."""
     counties = load_county_data()
     tws_trend_grid = np.array(results["spatial"]["tws_trend"])
 

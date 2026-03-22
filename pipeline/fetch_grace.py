@@ -140,7 +140,7 @@ def fetch_grace_data(output_dir: Path = RAW_DIR) -> Path:
 
 
 def _generate_sample_grace_data(output_path: Path) -> Path:
-    """Generate synthetic GRACE TWS anomaly NetCDF for development/demo."""
+    """Generate synthetic GRACE TWS anomaly NetCDF (cm) for development/demo."""
     import netCDF4 as nc
 
     logger.info("Generating sample GRACE data for contiguous US...")
@@ -173,12 +173,10 @@ def _generate_sample_grace_data(output_path: Path) -> Path:
     # - High Plains (KS, NE, TX panhandle): Ogallala aquifer depletion
     # - Southeast: relatively stable/gaining
     # - Great Lakes/Northeast: stable to gaining
-    sw_weight = np.clip((38.0 - lat_grid) / 8.0, 0, 1) * np.clip(
-        (-108.0 - lon_grid) / 15.0, 0, 1
-    )
+    sw_weight = np.clip((38.0 - lat_grid) / 8.0, 0, 1) * np.clip((-108.0 - lon_grid) / 15.0, 0, 1)
     # High Plains: centered ~37N, -100W
     hp_dist = np.sqrt(((lat_grid - 37.0) / 5.0) ** 2 + ((lon_grid + 100.0) / 5.0) ** 2)
-    hp_weight = np.exp(-hp_dist**2 / 2.0) * 0.6
+    hp_weight = np.exp(-(hp_dist**2) / 2.0) * 0.6
     # Eastern US: generally stable to positive
     east_weight = np.clip((lon_grid + 90.0) / 25.0, 0, 1) * 0.3
     # Combined trend strength: negative in west/plains, positive in east
@@ -260,13 +258,27 @@ def _generate_sample_grace_data(output_path: Path) -> Path:
 
 def load_grace_data(filepath: Path | None = None) -> dict:
     """
-    Load and extract GRACE data for the Western US region.
+    Load and extract GRACE data for the contiguous US region.
 
     Handles both real NASA data (global, lon 0-360, time in days)
     and sample data (regional, lon -180 to 180, time in months).
+    Real data is optionally corrected with the CRI scale factor
+    for land cells when a ``scale_factor`` variable is present.
+
+    Args:
+        filepath: Path to a GRACE NetCDF file.  When *None*, looks
+            in ``RAW_DIR`` and fetches automatically if missing.
 
     Returns:
-        Dict with lat, lon, time_months_since_200204, and tws_anomaly_cm.
+        Dict with keys:
+            - ``"lat"`` (list[float]): Latitude values (degrees north).
+            - ``"lon"`` (list[float]): Longitude values (degrees east).
+            - ``"time_months_since_200204"`` (list[float]): Month
+              offsets from April 2002.
+            - ``"tws_anomaly_cm"`` (list): Terrestrial water storage
+              anomaly in cm of equivalent water thickness, shape
+              [time x lat x lon].  Masked ocean/missing cells are
+              filled with 0.0.
     """
     import netCDF4 as nc
 
@@ -311,19 +323,21 @@ def load_grace_data(filepath: Path | None = None) -> dict:
     else:
         time_months = time_raw.data
 
-    # Subset to Western US
+    # Subset to contiguous US
     lat_mask = (lats >= REGION["min_lat"]) & (lats <= REGION["max_lat"])
     lon_mask = (lons >= REGION["min_lon"]) & (lons <= REGION["max_lon"])
 
     tws_subset = tws[:, lat_mask, :][:, :, lon_mask]
 
     # Handle masked arrays (ocean/missing data → 0)
-    if hasattr(tws_subset, 'filled'):
+    if hasattr(tws_subset, "filled"):
         tws_subset = tws_subset.filled(0.0)
 
     result = {
         "lat": lats[lat_mask].data.tolist(),
-        "lon": lons[lon_mask].tolist() if hasattr(lons[lon_mask], 'tolist') else lons[lon_mask].data.tolist(),
+        "lon": lons[lon_mask].tolist()
+        if hasattr(lons[lon_mask], "tolist")
+        else lons[lon_mask].data.tolist(),
         "time_months_since_200204": time_months.tolist(),
         "tws_anomaly_cm": tws_subset.tolist(),
     }

@@ -4,6 +4,17 @@ message: >-
   If you use this software or its data outputs, please cite it
   using the metadata from this file.
 type: software
+version: "1.0.0"
+date-released: "2026-03-22"
+abstract: >-
+  Satellite-based freshwater monitoring dashboard for the United
+  States. Combines NASA GRACE-FO terrestrial water storage
+  anomalies, GPM IMERG precipitation estimates, and US Census
+  population data to quantify how water availability is changing
+  and estimate the number of people living in areas of declining
+  water storage. The interactive dashboard classifies regions as
+  stable, moderate, or severe based on long-term water storage
+  trends measured by satellite gravimetry.
 authors:
   - alias: Promeos
     url: https://github.com/Promeos
@@ -17,6 +28,9 @@ keywords:
   - GPM
   - hydrology
   - dashboard
+  - terrestrial-water-storage
+  - precipitation
+  - climate
 license: CC-BY-4.0
 references:
   - type: data

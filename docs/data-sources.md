@@ -8,7 +8,7 @@ This document explains where the Fresh Water Monitor gets its data, what each me
 
 ## Data Sources
 
-The dashboard combines three satellite and census datasets to paint a picture of freshwater availability across the Western US (11 states from Washington to New Mexico).
+The dashboard combines three satellite and census datasets to paint a picture of freshwater availability across the United States (all 50 states).
 
 | Dataset | What It Measures | Provider | How Often Updated | Spatial Detail | Time Coverage |
 |---------|-----------------|----------|-------------------|----------------|---------------|
@@ -67,7 +67,7 @@ NASA satellites --> NetCDF files --> Python pipeline --> JSON files --> Browser 
 
 ### Water Stress Classification (per state)
 
-Each of the 11 Western US states is assigned a status based on the water storage trend at its population center:
+Each of the 50 US states is assigned a status based on the water storage trend at its population center:
 
 | Status | TWS Trend Threshold | What It Means |
 |--------|-------------------|---------------|
@@ -81,7 +81,7 @@ Each of the 11 Western US states is assigned a status based on the water storage
 
 ### Grid Resolution
 
-All datasets are resampled to a common **0.5-degree grid** (~50 km) covering the Western US bounding box: 31--49 degrees North latitude, 125--104 degrees West longitude.
+All datasets are resampled to a common **0.5-degree grid** (~50 km) covering the contiguous US bounding box: 24--50 degrees North latitude, 125--66 degrees West longitude.
 
 ### Area-Weighted Averaging
 
@@ -92,7 +92,7 @@ When computing regional averages, each grid cell is weighted by the cosine of it
 If the pipeline cannot download real NASA data (e.g., no internet or no Earthdata credentials), it generates **synthetic data** that mimics real patterns:
 
 - Seasonal cycles (wet winters, dry summers)
-- Long-term drought trends (matching known Western US droughts in 2011--2013, 2014--2017, 2020--2022)
+- Long-term drought trends (matching known US droughts in 2011--2013, 2014--2017, 2020--2022)
 - Spatial gradients (wetter in the Pacific Northwest, drier in the Desert Southwest)
 - Random noise for realism
 
@@ -100,7 +100,7 @@ Synthetic data uses fixed random seeds (`np.random.seed(42)` for GRACE, `np.rand
 
 ### Data File Formats
 
-The pipeline outputs four JSON files to `docs/data/`:
+The pipeline outputs five JSON files to `docs/data/`:
 
 | File | Contents | Typical Size |
 |------|----------|-------------|
@@ -108,6 +108,7 @@ The pipeline outputs four JSON files to `docs/data/`:
 | `timeseries.json` | Monthly and annual time series for charts | ~50 KB |
 | `spatial.json` | Lat/lon grids for the heatmap | ~200 KB |
 | `states.json` | Per-state impacts with sparkline data | ~100 KB |
+| `counties.json` | GeoJSON with per-county TWS trend and water stress | ~500 KB |
 
 ---
 

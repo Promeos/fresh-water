@@ -43,13 +43,17 @@ def _find_gpm_granule_urls() -> list[tuple[int, int, str]]:
 
     while True:
         try:
-            resp = requests.get(CMR_SEARCH_URL, params={
-                "collection_concept_id": GPM_COLLECTION,
-                "temporal": f"{start},{end}",
-                "sort_key": "start_date",
-                "page_size": page_size,
-                "page_num": page,
-            }, timeout=30)
+            resp = requests.get(
+                CMR_SEARCH_URL,
+                params={
+                    "collection_concept_id": GPM_COLLECTION,
+                    "temporal": f"{start},{end}",
+                    "sort_key": "start_date",
+                    "page_size": page_size,
+                    "page_num": page,
+                },
+                timeout=30,
+            )
             resp.raise_for_status()
             entries = resp.json().get("feed", {}).get("entry", [])
 
@@ -57,7 +61,6 @@ def _find_gpm_granule_urls() -> list[tuple[int, int, str]]:
                 break
 
             for entry in entries:
-                title = entry.get("title", "")
                 # Extract year/month from title like "...20240101-S000000..."
                 for link in entry.get("links", []):
                     href = link.get("href", "")
@@ -91,7 +94,10 @@ def _download_gpm_granule(url: str, output_path: Path) -> bool:
     headers = {"Authorization": f"Bearer {NASA_API_KEY}"}
     try:
         resp = requests.get(
-            url, headers=headers, timeout=180, allow_redirects=True,
+            url,
+            headers=headers,
+            timeout=180,
+            allow_redirects=True,
             stream=True,
         )
         resp.raise_for_status()
@@ -107,7 +113,7 @@ def _download_gpm_granule(url: str, output_path: Path) -> bool:
 
 
 def _extract_precip_from_granule(filepath: Path) -> np.ndarray | None:
-    """Extract precipitation array from a GPM HDF5 granule, subset to US region."""
+    """Extract US-region precipitation (mm/month) from a GPM HDF5 granule."""
     import h5py
 
     try:
@@ -182,10 +188,7 @@ def fetch_gpm_data(output_dir: Path = RAW_DIR) -> Path:
 
     for i, (year, month, url) in enumerate(granule_list):
         if (i + 1) % 24 == 0 or i == 0:
-            logger.info(
-                f"  Downloading {year}-{month:02d} "
-                f"({i + 1}/{len(granule_list)})..."
-            )
+            logger.info(f"  Downloading {year}-{month:02d} ({i + 1}/{len(granule_list)})...")
 
         tmp_file = tmp_dir / f"gpm_{year:04d}{month:02d}.hdf5"
 
@@ -203,8 +206,7 @@ def fetch_gpm_data(output_dir: Path = RAW_DIR) -> Path:
         # If we fail too many times early, fall back to synthetic
         if failed > 10 and len(downloaded) < 3:
             logger.warning(
-                f"Too many download failures ({failed}). "
-                "Falling back to synthetic GPM data."
+                f"Too many download failures ({failed}). Falling back to synthetic GPM data."
             )
             # Clean up tmp dir
             for f in tmp_dir.iterdir():
@@ -221,10 +223,7 @@ def fetch_gpm_data(output_dir: Path = RAW_DIR) -> Path:
         logger.warning("No GPM granules downloaded. Using synthetic data.")
         return _generate_sample_gpm_data(output_path)
 
-    logger.info(
-        f"  Downloaded {len(downloaded)}/{len(granule_list)} months "
-        f"({failed} failed)"
-    )
+    logger.info(f"  Downloaded {len(downloaded)}/{len(granule_list)} months ({failed} failed)")
 
     # Combine into single NetCDF
     return _combine_gpm_to_netcdf(downloaded, output_path)
@@ -233,31 +232,24 @@ def fetch_gpm_data(output_dir: Path = RAW_DIR) -> Path:
 def _combine_gpm_to_netcdf(
     downloaded: list[tuple[int, int, np.ndarray]], output_path: Path
 ) -> Path:
-    """Combine downloaded monthly GPM arrays into a single NetCDF file."""
+    """Combine downloaded monthly GPM arrays (mm/month) into a single NetCDF file."""
     import netCDF4 as nc
 
     # Sort by date
     downloaded.sort(key=lambda x: (x[0], x[1]))
     n_months = len(downloaded)
 
-    # Get grid dimensions from first array
-    sample = downloaded[0][2]
-    n_lat, n_lon = sample.shape
-
-    # Build lat/lon arrays matching the US subset
-    lats = np.arange(REGION["min_lat"], REGION["max_lat"] + 0.1, 0.1)[:n_lat]
-    lons = np.arange(REGION["min_lon"], REGION["max_lon"] + 0.1, 0.1)[:n_lon]
-
-    # If dimensions don't match exactly, interpolate to 0.5-degree grid
+    # Interpolate to 0.5-degree grid
     target_lats = np.arange(REGION["min_lat"], REGION["max_lat"] + 0.5, 0.5)
     target_lons = np.arange(REGION["min_lon"], REGION["max_lon"] + 0.5, 0.5)
 
     precip = np.zeros((n_months, len(target_lats), len(target_lons)))
 
-    for i, (year, month, arr) in enumerate(downloaded):
+    for i, (_year, _month, arr) in enumerate(downloaded):
         # Resample to target grid if needed
         if arr.shape != (len(target_lats), len(target_lons)):
             from scipy.ndimage import zoom
+
             zoom_y = len(target_lats) / arr.shape[0]
             zoom_x = len(target_lons) / arr.shape[1]
             precip[i] = zoom(arr, (zoom_y, zoom_x), order=1)
@@ -303,7 +295,7 @@ def _combine_gpm_to_netcdf(
 
 
 def _generate_sample_gpm_data(output_path: Path) -> Path:
-    """Generate synthetic GPM precipitation NetCDF for development/demo."""
+    """Generate synthetic GPM precipitation NetCDF (mm/month) for development/demo."""
     import netCDF4 as nc
 
     logger.info("Generating sample GPM precipitation data for contiguous US...")
@@ -328,14 +320,13 @@ def _generate_sample_gpm_data(output_path: Path) -> Path:
         # East-west gradient: eastern US gets more rain
         + 40.0 * np.clip((lon_grid + 90.0) / 30.0, 0, 1)
         # Southeast enhancement (Gulf moisture)
-        + 30.0 * np.clip((35.0 - lat_grid) / 10.0, 0, 1)
-            * np.clip((lon_grid + 90.0) / 15.0, 0, 1)
+        + 30.0 * np.clip((35.0 - lat_grid) / 10.0, 0, 1) * np.clip((lon_grid + 90.0) / 15.0, 0, 1)
         # Pacific coast enhancement
-        + 25.0 * np.exp(-((lon_grid + 122.0) / 3.0) ** 2)
-            * np.clip((lat_grid - 40.0) / 8.0, 0, 1)
+        + 25.0
+        * np.exp(-(((lon_grid + 122.0) / 3.0) ** 2))
+        * np.clip((lat_grid - 40.0) / 8.0, 0, 1)
         # Desert SW suppression (AZ, NM, NV, S-CA)
-        - 35.0 * np.clip((36.0 - lat_grid) / 8.0, 0, 1)
-            * np.clip((-108.0 - lon_grid) / 15.0, 0, 1)
+        - 35.0 * np.clip((36.0 - lat_grid) / 8.0, 0, 1) * np.clip((-108.0 - lon_grid) / 15.0, 0, 1)
     )
     base_precip = np.maximum(base_precip, 8.0)  # Floor at 8 mm/mo
 
@@ -347,12 +338,12 @@ def _generate_sample_gpm_data(output_path: Path) -> Path:
         # West: wet winter / dry summer
         # East: more uniform, slight summer peak (thunderstorms)
         west_seasonal = np.where(
-            np.isin(month_idx, [10, 11, 0, 1, 2]), 1.8,
-            np.where(np.isin(month_idx, [5, 6, 7, 8]), 0.3, 1.0)
+            np.isin(month_idx, [10, 11, 0, 1, 2]),
+            1.8,
+            np.where(np.isin(month_idx, [5, 6, 7, 8]), 0.3, 1.0),
         )
         east_seasonal = np.where(
-            np.isin(month_idx, [5, 6, 7]), 1.3,
-            np.where(np.isin(month_idx, [0, 1, 11]), 0.8, 1.0)
+            np.isin(month_idx, [5, 6, 7]), 1.3, np.where(np.isin(month_idx, [0, 1, 11]), 0.8, 1.0)
         )
         # Blend based on longitude
         east_frac = np.clip((lon_grid + 100.0) / 30.0, 0, 1)
@@ -412,7 +403,7 @@ def _generate_sample_gpm_data(output_path: Path) -> Path:
 
 def load_gpm_data(filepath: Path | None = None) -> dict:
     """
-    Load GPM precipitation data for the Western US.
+    Load GPM precipitation data for the contiguous US.
 
     Reads the NetCDF file produced by :func:`fetch_gpm_data` and
     returns plain Python lists suitable for JSON serialization.

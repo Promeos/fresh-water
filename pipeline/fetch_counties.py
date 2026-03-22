@@ -17,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
-from pipeline.config import DATA_DIR, RAW_DIR, REGION
+from pipeline.config import RAW_DIR, REGION
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -82,19 +82,56 @@ STATE_FIPS = {
 
 # State populations for distributing across counties (2023 estimates)
 STATE_POPS = {
-    "01": 5_108_468, "02": 733_406, "04": 7_431_344, "05": 3_067_732,
-    "06": 38_965_193, "08": 5_877_610, "09": 3_617_176, "10": 1_018_396,
-    "12": 22_610_726, "13": 10_912_876, "15": 1_440_196, "16": 1_964_726,
-    "17": 12_549_689, "18": 6_862_199, "19": 3_207_004, "20": 2_940_865,
-    "21": 4_526_154, "22": 4_573_749, "23": 1_395_722, "24": 6_180_253,
-    "25": 7_001_399, "26": 10_037_261, "27": 5_737_915, "28": 2_939_690,
-    "29": 6_196_156, "30": 1_132_812, "31": 1_978_379, "32": 3_194_176,
-    "33": 1_402_054, "34": 9_290_841, "35": 2_114_371, "36": 19_571_216,
-    "37": 10_698_973, "38": 783_926, "39": 11_785_935, "40": 4_053_824,
-    "41": 4_233_358, "42": 12_961_683, "44": 1_095_962, "45": 5_373_555,
-    "46": 919_318, "47": 7_126_489, "48": 30_503_340, "49": 3_417_734,
-    "50": 647_464, "51": 8_683_619, "53": 7_812_880, "54": 1_770_071,
-    "55": 5_910_955, "56": 584_057,
+    "01": 5_108_468,
+    "02": 733_406,
+    "04": 7_431_344,
+    "05": 3_067_732,
+    "06": 38_965_193,
+    "08": 5_877_610,
+    "09": 3_617_176,
+    "10": 1_018_396,
+    "12": 22_610_726,
+    "13": 10_912_876,
+    "15": 1_440_196,
+    "16": 1_964_726,
+    "17": 12_549_689,
+    "18": 6_862_199,
+    "19": 3_207_004,
+    "20": 2_940_865,
+    "21": 4_526_154,
+    "22": 4_573_749,
+    "23": 1_395_722,
+    "24": 6_180_253,
+    "25": 7_001_399,
+    "26": 10_037_261,
+    "27": 5_737_915,
+    "28": 2_939_690,
+    "29": 6_196_156,
+    "30": 1_132_812,
+    "31": 1_978_379,
+    "32": 3_194_176,
+    "33": 1_402_054,
+    "34": 9_290_841,
+    "35": 2_114_371,
+    "36": 19_571_216,
+    "37": 10_698_973,
+    "38": 783_926,
+    "39": 11_785_935,
+    "40": 4_053_824,
+    "41": 4_233_358,
+    "42": 12_961_683,
+    "44": 1_095_962,
+    "45": 5_373_555,
+    "46": 919_318,
+    "47": 7_126_489,
+    "48": 30_503_340,
+    "49": 3_417_734,
+    "50": 647_464,
+    "51": 8_683_619,
+    "53": 7_812_880,
+    "54": 1_770_071,
+    "55": 5_910_955,
+    "56": 584_057,
 }
 
 
@@ -129,58 +166,218 @@ def _distribute_county_populations(
 
 
 def _scatter_centroids(
-    n: int, min_lat: float, max_lat: float, min_lon: float, max_lon: float,
+    n: int,
+    min_lat: float,
+    max_lat: float,
+    min_lon: float,
+    max_lon: float,
     rng: np.random.RandomState,
 ) -> list[tuple[float, float]]:
     """Generate scattered centroid positions within a bounding box."""
     lats = rng.uniform(min_lat + 0.1, max_lat - 0.1, n)
     lons = rng.uniform(min_lon + 0.1, max_lon - 0.1, n)
-    return list(zip(lats.tolist(), lons.tolist()))
+    return list(zip(lats.tolist(), lons.tolist(), strict=True))
 
 
 def _generate_county_name(state_fips: str, idx: int) -> str:
     """Generate a county name. Uses a mix of common US county name patterns."""
     # Common county name prefixes used across the US
     prefixes = [
-        "Washington", "Jefferson", "Franklin", "Lincoln", "Jackson",
-        "Madison", "Monroe", "Clay", "Union", "Marion",
-        "Grant", "Adams", "Hamilton", "Greene", "Warren",
-        "Lawrence", "Carroll", "Crawford", "Morgan", "Clark",
-        "Perry", "Pike", "Randolph", "Scott", "Wayne",
-        "Lee", "Henry", "Marshall", "Douglas", "Harrison",
-        "Polk", "Johnson", "Fulton", "Butler", "Hancock",
-        "Logan", "Shelby", "Sullivan", "Russell", "Boone",
-        "Calhoun", "Cherokee", "Clinton", "Dallas", "Fayette",
-        "Floyd", "Howard", "Jasper", "Mercer", "Montgomery",
-        "Newton", "Owen", "Putnam", "Richland", "Taylor",
-        "Brown", "Camden", "Cedar", "Cheyenne", "Coleman",
-        "Comanche", "Dawson", "Decatur", "Dixon", "Dunklin",
-        "Ellis", "Emmet", "Eureka", "Gage", "Garfield",
-        "Hale", "Harper", "Haskell", "Huron", "Iron",
-        "Jerome", "Keokuk", "Kiowa", "Lamar", "Lander",
-        "Lewis", "Linn", "Livingston", "Lyon", "Macon",
-        "Marin", "Meade", "Mitchell", "Napa", "Noble",
-        "Osage", "Page", "Pawnee", "Phillips", "Platte",
-        "Pratt", "Reno", "Rice", "Rush", "Saline",
-        "Seward", "Sherman", "Sierra", "Smith", "Stafford",
-        "Stevens", "Teton", "Thomas", "Trego", "Vernon",
-        "Wabash", "Walker", "Weld", "Wichita", "Woodson",
-        "Apache", "Benton", "Blaine", "Boundary", "Canyon",
-        "Carbon", "Cascade", "Clearwater", "Custer", "Elmore",
-        "Fremont", "Glacier", "Hill", "Judith", "Lake",
-        "Lemhi", "Liberty", "Mineral", "Missoula", "Pondera",
-        "Powell", "Prairie", "Ravalli", "Rosebud", "Sanders",
-        "Toole", "Treasure", "Valley", "Wheatland", "Wibaux",
-        "Bannock", "Bear", "Boise", "Bonner", "Bonneville",
-        "Butte", "Caribou", "Cassia", "Franklin", "Gem",
-        "Gooding", "Idaho", "Kootenai", "Latah", "Lemhi",
-        "Lincoln", "Madison", "Minidoka", "Oneida", "Owyhee",
-        "Payette", "Power", "Shoshone", "Twin", "Cumberland",
-        "Essex", "Gloucester", "Hudson", "Hunterdon", "Mercer",
-        "Middlesex", "Monmouth", "Morris", "Ocean", "Passaic",
-        "Salem", "Somerset", "Sussex", "Bergen", "Burlington",
-        "Atlantic", "Cape", "Fairfield", "Hartford", "Litchfield",
-        "New Haven", "New London", "Tolland", "Windham", "Bristol",
+        "Washington",
+        "Jefferson",
+        "Franklin",
+        "Lincoln",
+        "Jackson",
+        "Madison",
+        "Monroe",
+        "Clay",
+        "Union",
+        "Marion",
+        "Grant",
+        "Adams",
+        "Hamilton",
+        "Greene",
+        "Warren",
+        "Lawrence",
+        "Carroll",
+        "Crawford",
+        "Morgan",
+        "Clark",
+        "Perry",
+        "Pike",
+        "Randolph",
+        "Scott",
+        "Wayne",
+        "Lee",
+        "Henry",
+        "Marshall",
+        "Douglas",
+        "Harrison",
+        "Polk",
+        "Johnson",
+        "Fulton",
+        "Butler",
+        "Hancock",
+        "Logan",
+        "Shelby",
+        "Sullivan",
+        "Russell",
+        "Boone",
+        "Calhoun",
+        "Cherokee",
+        "Clinton",
+        "Dallas",
+        "Fayette",
+        "Floyd",
+        "Howard",
+        "Jasper",
+        "Mercer",
+        "Montgomery",
+        "Newton",
+        "Owen",
+        "Putnam",
+        "Richland",
+        "Taylor",
+        "Brown",
+        "Camden",
+        "Cedar",
+        "Cheyenne",
+        "Coleman",
+        "Comanche",
+        "Dawson",
+        "Decatur",
+        "Dixon",
+        "Dunklin",
+        "Ellis",
+        "Emmet",
+        "Eureka",
+        "Gage",
+        "Garfield",
+        "Hale",
+        "Harper",
+        "Haskell",
+        "Huron",
+        "Iron",
+        "Jerome",
+        "Keokuk",
+        "Kiowa",
+        "Lamar",
+        "Lander",
+        "Lewis",
+        "Linn",
+        "Livingston",
+        "Lyon",
+        "Macon",
+        "Marin",
+        "Meade",
+        "Mitchell",
+        "Napa",
+        "Noble",
+        "Osage",
+        "Page",
+        "Pawnee",
+        "Phillips",
+        "Platte",
+        "Pratt",
+        "Reno",
+        "Rice",
+        "Rush",
+        "Saline",
+        "Seward",
+        "Sherman",
+        "Sierra",
+        "Smith",
+        "Stafford",
+        "Stevens",
+        "Teton",
+        "Thomas",
+        "Trego",
+        "Vernon",
+        "Wabash",
+        "Walker",
+        "Weld",
+        "Wichita",
+        "Woodson",
+        "Apache",
+        "Benton",
+        "Blaine",
+        "Boundary",
+        "Canyon",
+        "Carbon",
+        "Cascade",
+        "Clearwater",
+        "Custer",
+        "Elmore",
+        "Fremont",
+        "Glacier",
+        "Hill",
+        "Judith",
+        "Lake",
+        "Lemhi",
+        "Liberty",
+        "Mineral",
+        "Missoula",
+        "Pondera",
+        "Powell",
+        "Prairie",
+        "Ravalli",
+        "Rosebud",
+        "Sanders",
+        "Toole",
+        "Treasure",
+        "Valley",
+        "Wheatland",
+        "Wibaux",
+        "Bannock",
+        "Bear",
+        "Boise",
+        "Bonner",
+        "Bonneville",
+        "Butte",
+        "Caribou",
+        "Cassia",
+        "Franklin",
+        "Gem",
+        "Gooding",
+        "Idaho",
+        "Kootenai",
+        "Latah",
+        "Lemhi",
+        "Lincoln",
+        "Madison",
+        "Minidoka",
+        "Oneida",
+        "Owyhee",
+        "Payette",
+        "Power",
+        "Shoshone",
+        "Twin",
+        "Cumberland",
+        "Essex",
+        "Gloucester",
+        "Hudson",
+        "Hunterdon",
+        "Mercer",
+        "Middlesex",
+        "Monmouth",
+        "Morris",
+        "Ocean",
+        "Passaic",
+        "Salem",
+        "Somerset",
+        "Sussex",
+        "Bergen",
+        "Burlington",
+        "Atlantic",
+        "Cape",
+        "Fairfield",
+        "Hartford",
+        "Litchfield",
+        "New Haven",
+        "New London",
+        "Tolland",
+        "Windham",
+        "Bristol",
     ]
     return prefixes[idx % len(prefixes)]
 
@@ -204,14 +401,23 @@ def generate_county_data() -> list[dict]:
 
     counties = []
 
-    for state_fips, (state_name, n_counties, min_lat, max_lat, min_lon, max_lon) in STATE_FIPS.items():
+    for state_fips, (
+        state_name,
+        n_counties,
+        min_lat,
+        max_lat,
+        min_lon,
+        max_lon,
+    ) in STATE_FIPS.items():
         fips_codes = _generate_county_fips(state_fips, n_counties)
         populations = _distribute_county_populations(
             STATE_POPS.get(state_fips, 1_000_000), n_counties, rng
         )
         centroids = _scatter_centroids(n_counties, min_lat, max_lat, min_lon, max_lon, rng)
 
-        for i, (fips, (clat, clon), pop) in enumerate(zip(fips_codes, centroids, populations)):
+        for i, (fips, (clat, clon), pop) in enumerate(
+            zip(fips_codes, centroids, populations, strict=True)
+        ):
             name = _generate_county_name(state_fips, i)
 
             # Map to grid cells: find the grid cell(s) nearest to the centroid
@@ -241,29 +447,30 @@ def generate_county_data() -> list[dict]:
             # Simple polygon (small rectangle around centroid)
             d_lat = (max_lat - min_lat) / max(np.sqrt(n_counties), 1) / 2
             d_lon = (max_lon - min_lon) / max(np.sqrt(n_counties), 1) / 2
-            polygon_coords = [[
-                [round(clon - d_lon, 3), round(clat - d_lat, 3)],
-                [round(clon + d_lon, 3), round(clat - d_lat, 3)],
-                [round(clon + d_lon, 3), round(clat + d_lat, 3)],
-                [round(clon - d_lon, 3), round(clat + d_lat, 3)],
-                [round(clon - d_lon, 3), round(clat - d_lat, 3)],
-            ]]
+            polygon_coords = [
+                [
+                    [round(clon - d_lon, 3), round(clat - d_lat, 3)],
+                    [round(clon + d_lon, 3), round(clat - d_lat, 3)],
+                    [round(clon + d_lon, 3), round(clat + d_lat, 3)],
+                    [round(clon - d_lon, 3), round(clat + d_lat, 3)],
+                    [round(clon - d_lon, 3), round(clat - d_lat, 3)],
+                ]
+            ]
 
-            counties.append({
-                "fips": fips,
-                "name": name,
-                "state": state_name,
-                "center_lat": round(clat, 3),
-                "center_lon": round(clon, 3),
-                "population": max(pop, 100),
-                "grid_cells": grid_cells,
-                "polygon_coords": polygon_coords,
-            })
+            counties.append(
+                {
+                    "fips": fips,
+                    "name": name,
+                    "state": state_name,
+                    "center_lat": round(clat, 3),
+                    "center_lon": round(clon, 3),
+                    "population": max(pop, 100),
+                    "grid_cells": grid_cells,
+                    "polygon_coords": polygon_coords,
+                }
+            )
 
-    logger.info(
-        f"Generated {len(counties)} county records across "
-        f"{len(STATE_FIPS)} states"
-    )
+    logger.info(f"Generated {len(counties)} county records across {len(STATE_FIPS)} states")
     return counties
 
 
@@ -301,6 +508,7 @@ if __name__ == "__main__":
 
     # Count by state
     from collections import Counter
+
     state_counts = Counter(c["state"] for c in counties)
     for state, count in sorted(state_counts.items()):
         logger.info(f"  {state}: {count} counties")

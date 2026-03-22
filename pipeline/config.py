@@ -5,6 +5,22 @@ Centralizes credentials, file paths, geographic bounds, and dataset
 identifiers used by every stage of the pipeline.  Constants here are
 intentionally module-level so they can be imported directly
 (``from pipeline.config import REGION``).
+
+Key constants:
+    REGION: Bounding box for the contiguous US (degrees).  Covers
+        24-50 N latitude and 125-66 W longitude, enclosing all 48
+        contiguous states.
+    STATES: All 50 US state names, used for per-state analysis in
+        :mod:`pipeline.process` and :mod:`pipeline.export`.
+    GRACE_DATASET / GRACE_BASE_URL: GRACE-FO RL06.1 V3 Mascon CRI
+        product identifier and download root.  This is the latest
+        publicly available release from JPL PODAAC as of early 2026.
+    GPM_BASE_URL: NASA GPM IMERG V07 monthly (Final Run) summary page.
+    WORLDPOP_BASE_URL: WorldPop 1 km gridded population (reserved for
+        future upgrade; current pipeline uses Census estimates instead).
+    START_YEAR / END_YEAR: Inclusive analysis window.  GRACE launched
+        April 2002; END_YEAR is set to 2025 so the pipeline covers
+        the full satellite record.
 """
 
 import os
@@ -36,16 +52,56 @@ REGION = {
 
 # All 50 US states
 STATES = [
-    "Alabama", "Alaska", "Arizona", "Arkansas", "California",
-    "Colorado", "Connecticut", "Delaware", "Florida", "Georgia",
-    "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
-    "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland",
-    "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri",
-    "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
-    "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
-    "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
-    "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
-    "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+    "Alabama",
+    "Alaska",
+    "Arizona",
+    "Arkansas",
+    "California",
+    "Colorado",
+    "Connecticut",
+    "Delaware",
+    "Florida",
+    "Georgia",
+    "Hawaii",
+    "Idaho",
+    "Illinois",
+    "Indiana",
+    "Iowa",
+    "Kansas",
+    "Kentucky",
+    "Louisiana",
+    "Maine",
+    "Maryland",
+    "Massachusetts",
+    "Michigan",
+    "Minnesota",
+    "Mississippi",
+    "Missouri",
+    "Montana",
+    "Nebraska",
+    "Nevada",
+    "New Hampshire",
+    "New Jersey",
+    "New Mexico",
+    "New York",
+    "North Carolina",
+    "North Dakota",
+    "Ohio",
+    "Oklahoma",
+    "Oregon",
+    "Pennsylvania",
+    "Rhode Island",
+    "South Carolina",
+    "South Dakota",
+    "Tennessee",
+    "Texas",
+    "Utah",
+    "Vermont",
+    "Virginia",
+    "Washington",
+    "West Virginia",
+    "Wisconsin",
+    "Wyoming",
 ]
 
 # GRACE-FO settings -- RL06.1 V3 Mascon CRI is the latest publicly

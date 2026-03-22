@@ -8,7 +8,7 @@ Thanks for your interest in contributing! This project aims to make satellite-ba
 
 ### Prerequisites
 
-- **Python 3.10+**
+- **Python 3.11+**
 - **Git**
 - A free [NASA Earthdata account](https://urs.earthdata.nasa.gov/users/new) (optional -- the pipeline works without it using synthetic data)
 
@@ -100,7 +100,7 @@ Open an issue with the label `enhancement`. Describe:
    ```bash
    git commit -m "Add: brief description of what and why"
    ```
-5. **Push** and open a Pull Request against `main`.
+5. **Push** and open a Pull Request against `master`.
 
 ### PR Guidelines
 

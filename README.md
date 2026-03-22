@@ -1,13 +1,31 @@
 # Fresh Water Monitor
 
-Satellite-based freshwater monitoring for the United States. Combines GRACE-FO terrestrial water storage, GPM precipitation, and US Census population data to show how water availability is changing and what that means for people in affected regions.
+Satellite-based freshwater monitoring for the United States. Combines NASA GRACE-FO terrestrial water storage (TWS), GPM IMERG precipitation, and US Census population data to show how water availability is changing and what that means for people in affected regions.
 
-Deployed as a static [GitHub Pages dashboard](https://promeos.github.io/fresh-water/).
+**[View the live dashboard](https://promeos.github.io/fresh-water/)**
+
+## What This Project Does
+
+Fresh Water Monitor tracks underground and surface water changes across all 50 US states using satellite measurements from NASA's GRACE-FO mission. It answers three questions:
+
+1. **Where is water disappearing?** Per-county water storage trends mapped from satellite gravimetry data (2002--present).
+2. **How severe is the decline?** Regions classified as *stable*, *moderate*, or *severe* based on long-term trends.
+3. **How many people are affected?** Population overlays estimate how many people live in areas of declining water storage.
+
+## Key Metrics
+
+| Metric | What It Measures | How to Read It |
+|--------|-----------------|----------------|
+| **TWS Anomaly (cm)** | How much water storage deviates from the 2004--2009 baseline | Negative = less water than the historical average |
+| **TWS Trend (cm/year)** | Rate of water storage change over the satellite record | Below -0.5 = declining; below -1.5 = severe |
+| **Precipitation Deficit (%)** | Recent 3-year average vs. historical average rainfall | Negative = drier than normal |
+| **Population Affected** | People in grid cells where TWS trend < -0.5 cm/year | Higher = more people exposed to water stress |
+| **Water Stress** | Classification per region | Severe (< -1.5 cm/yr), Moderate (< -0.5), Stable (>= -0.5) |
 
 ## Prerequisites
 
 - Python 3.11+
-- A [NASA Earthdata](https://urs.earthdata.nasa.gov/) account (free — needed for live satellite data)
+- A [NASA Earthdata](https://urs.earthdata.nasa.gov/) account (free -- needed for live satellite data, optional for development)
 
 ## Setup
 
@@ -23,7 +41,7 @@ pip install -r requirements.txt
 
 ### 2. Configure credentials (optional)
 
-Live satellite data requires a NASA Earthdata API token. Without it, the pipeline uses synthetic fallback data — perfectly fine for development and exploring the dashboard.
+Live satellite data requires a NASA Earthdata API token. Without it, the pipeline uses synthetic fallback data -- perfectly fine for development and exploring the dashboard.
 
 To use real data:
 
@@ -83,30 +101,57 @@ tests/             pytest suite
 
 ```
 fetch_grace.py ──┐
-fetch_gpm.py ────┼─→ process.py ─→ export.py ─→ docs/data/*.json ─→ dashboard
+fetch_gpm.py ────┼--> process.py --> export.py --> docs/data/*.json --> dashboard
 fetch_population ┘
 ```
 
-Each fetcher has a synthetic fallback — no NASA Earthdata credentials are needed for development.
+Each fetcher has a synthetic fallback -- no NASA Earthdata credentials are needed for development.
 
-## Data Sources & Attribution
+## Data Sources
 
-This project uses publicly available satellite and demographic datasets:
-
-| Dataset | Provider | Description |
-|---------|----------|-------------|
-| [GRACE/GRACE-FO Mascon RL06.1 V3](https://podaac.jpl.nasa.gov/) | NASA JPL / GFZ | Terrestrial water storage anomalies |
-| [GPM IMERG V07](https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGM_07/summary) | NASA GES DISC | Monthly precipitation estimates |
-| [US Census Bureau](https://www.census.gov/) | US Census Bureau | State-level population data |
-| [WorldPop](https://www.worldpop.org/) | WorldPop / University of Southampton | Gridded population estimates |
+| Dataset | Full Name | Provider | Resolution | Coverage |
+|---------|-----------|----------|------------|----------|
+| [GRACE-FO Mascon RL06.1 V3](https://podaac.jpl.nasa.gov/) | Gravity Recovery and Climate Experiment Follow-On | NASA JPL / GFZ | Monthly, ~300 km (mascon tiles) | Apr 2002--present |
+| [GPM IMERG V07](https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGM_07/summary) | Global Precipitation Measurement Integrated Multi-satellite Retrievals | NASA GES DISC | Monthly, 0.1 degree (~10 km) | Jun 2000--present |
+| [US Census Bureau](https://www.census.gov/) | Population Estimates Program | Census Bureau | Annual, state-level | 2000--2023 |
+| [WorldPop](https://www.worldpop.org/) | Gridded Population Estimates | University of Southampton | 1 km | 2000--2020 |
 
 ### Copernicus Sentinel Data
 
-This project contains modified Copernicus Sentinel data (2002–2025). Access and use of Copernicus Sentinel Data is regulated under [EU Regulation No 1159/2013](https://eur-lex.europa.eu/eli/reg_del/2013/1159/oj) and is provided free, full, and open under the [Copernicus Sentinel Data Terms](https://sentinels.copernicus.eu/web/sentinel/terms-conditions).
+This project contains modified Copernicus Sentinel data (2002--2025). Access and use of Copernicus Sentinel Data is regulated under [EU Regulation No 1159/2013](https://eur-lex.europa.eu/eli/reg_del/2013/1159/oj) and is provided free, full, and open under the [Copernicus Sentinel Data Terms](https://sentinels.copernicus.eu/web/sentinel/terms-conditions).
 
 ### NASA GES DISC
 
 Data retrieved from the NASA Goddard Earth Sciences Data and Information Services Center (GES DISC) are subject to the [NASA GES DISC Data Policy](https://disc.gsfc.nasa.gov/information/documents?title=data-policy). Users must register with [NASA Earthdata Login](https://urs.earthdata.nasa.gov/).
+
+## Glossary
+
+| Term | Definition |
+|------|------------|
+| **TWS** | Terrestrial Water Storage -- total water on and below the land surface (groundwater, soil moisture, snow, surface water) |
+| **GRACE-FO** | Gravity Recovery and Climate Experiment Follow-On -- twin satellites that detect gravity changes caused by shifting water mass |
+| **Mascon** | Mass Concentration block -- a tile on Earth's surface (~300 km) used to estimate local gravity and water changes from GRACE data |
+| **IMERG** | Integrated Multi-satellite Retrievals for GPM -- algorithm that merges data from multiple precipitation-measuring satellites |
+| **LWE** | Liquid Water Equivalent -- expressing water volume as a uniform layer of water in centimeters |
+| **Anomaly** | Difference from a reference average; here, deviation from the 2004--2009 baseline period |
+| **CRI** | Coastline Resolution Improvement -- a filter applied to GRACE mascon data to reduce signal leakage near coastlines |
+
+## Citation
+
+If you use this project in research or publications, please cite it:
+
+```bibtex
+@software{fresh_water_monitor,
+  title = {Fresh Water Monitor},
+  author = {Promeos},
+  url = {https://github.com/Promeos/fresh-water},
+  version = {1.0.0},
+  date = {2026-03-22},
+  license = {CC-BY-4.0}
+}
+```
+
+Full citation metadata is available in [CITATION.cff](CITATION.cff), which is automatically recognized by GitHub and Zenodo.
 
 ## Disclaimer
 

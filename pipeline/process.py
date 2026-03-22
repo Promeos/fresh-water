@@ -25,7 +25,17 @@ def _align_to_grace_grid(gpm_data: dict, grace_data: dict) -> dict:
     Resample GPM data to match GRACE spatial and temporal dimensions.
 
     GRACE and GPM may have different grid sizes and time lengths.
-    We interpolate GPM spatially and trim/pad temporally to match.
+    GPM is spatially interpolated (bilinear via ``scipy.ndimage.zoom``)
+    and temporally truncated to the shorter of the two records.
+
+    Args:
+        gpm_data: Output of :func:`pipeline.fetch_gpm.load_gpm_data`.
+        grace_data: Output of :func:`pipeline.fetch_grace.load_grace_data`.
+
+    Returns:
+        Dict with the same keys as *gpm_data* (``lat``, ``lon``,
+        ``time_months_since_200204``, ``precipitation_mm``) but with
+        spatial and temporal dimensions matching *grace_data*.
     """
     from scipy.ndimage import zoom
 
@@ -52,7 +62,7 @@ def _align_to_grace_grid(gpm_data: dict, grace_data: dict) -> dict:
 
 
 def months_since_200204_to_dates(months_array: list) -> list[str]:
-    """Convert months-since-2002-04 to YYYY-MM date strings."""
+    """Convert month offsets (from April 2002) to ``YYYY-MM`` date strings."""
     dates = []
     for m in months_array:
         m_int = round(m)
@@ -62,9 +72,7 @@ def months_since_200204_to_dates(months_array: list) -> list[str]:
     return dates
 
 
-def compute_regional_timeseries(
-    data_3d: list, lats: list, lons: list, dates: list[str]
-) -> dict:
+def compute_regional_timeseries(data_3d: list, lats: list, lons: list, dates: list[str]) -> dict:
     """
     Compute area-weighted regional average timeseries with trend.
 
@@ -72,13 +80,26 @@ def compute_regional_timeseries(
     with 3+ months of data).
 
     Args:
-        data_3d: [time x lat x lon] values.
-        lats: Latitude values.
-        lons: Longitude values.
-        dates: List of "YYYY-MM" date strings for each timestep.
+        data_3d: Nested list with shape [time x lat x lon].
+        lats: Latitude values (degrees north), used for cosine
+            area-weighting.
+        lons: Longitude values (degrees east).
+        dates: ``YYYY-MM`` date strings, one per timestep.
 
     Returns:
-        Dict with monthly_mean, annual_mean, annual_years, and trend info.
+        Dict with keys:
+            - ``"monthly_mean"`` (list[float]): Area-weighted regional
+              mean for each month.
+            - ``"annual_mean"`` (list[float]): Calendar-year averages
+              (only years with >= 3 months).
+            - ``"annual_years"`` (list[int]): Years corresponding to
+              *annual_mean*.
+            - ``"trend_per_month"`` (float): OLS slope per month
+              (input units / month).
+            - ``"trend_per_year"`` (float): OLS slope annualized
+              (input units / year).
+            - ``"r_squared"`` (float): Coefficient of determination.
+            - ``"p_value"`` (float): Two-sided p-value for the slope.
     """
     arr = np.array(data_3d)
     n_time = arr.shape[0]
@@ -215,6 +236,7 @@ def compute_impact_metrics(grace_data: dict, gpm_data: dict, pop_data: dict) -> 
 
     if pop_raw.shape != (n_lat, n_lon):
         from scipy.ndimage import zoom
+
         zoom_factors = (n_lat / pop_raw.shape[0], n_lon / pop_raw.shape[1])
         pop_grid = zoom(pop_raw, zoom_factors, order=1)
         # Rescale to preserve total population

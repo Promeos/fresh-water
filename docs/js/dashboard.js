@@ -2,7 +2,7 @@
  * Fresh Water Monitor - Dashboard
  *
  * Loads pre-processed JSON data and renders interactive
- * Plotly charts for the Western US water analysis.
+ * Plotly charts for the US water analysis.
  */
 
 const DATA_BASE = './data';
