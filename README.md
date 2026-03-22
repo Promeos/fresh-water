@@ -1,5 +1,7 @@
 # Fresh Water Monitor: Satellite-Based Water Storage Tracking for the United States
 
+[![DOI](https://zenodo.org/badge/1189050270.svg)](https://doi.org/10.5281/zenodo.19172668)
+
 Satellite-based freshwater monitoring for the United States. Combines NASA GRACE-FO terrestrial water storage (TWS), GPM IMERG precipitation, and US Census population data to show how water availability is changing and what that means for people in affected regions.
 
 **[View the live dashboard](https://promeos.github.io/fresh-water/)**

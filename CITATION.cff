@@ -20,6 +20,10 @@ authors:
     family-names: Ortiz
     alias: Promeos
     url: https://github.com/Promeos
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.19172668
+    description: Zenodo archive DOI
 repository-code: https://github.com/Promeos/fresh-water
 url: https://promeos.github.io/fresh-water/
 keywords:
