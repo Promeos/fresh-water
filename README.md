@@ -4,13 +4,70 @@ Satellite-based freshwater monitoring for the United States. Combines GRACE-FO t
 
 Deployed as a static [GitHub Pages dashboard](https://promeos.github.io/fresh-water/).
 
-## Quick Start
+## Prerequisites
+
+- Python 3.11+
+- A [NASA Earthdata](https://urs.earthdata.nasa.gov/) account (free — needed for live satellite data)
+
+## Setup
+
+### 1. Clone and install
 
 ```bash
+git clone https://github.com/Promeos/fresh-water.git
+cd fresh-water
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python -m pipeline.export            # Run full pipeline (fetch + process + export)
-python -m http.server 8000 --directory docs  # Serve dashboard at localhost:8000
-python -m pytest tests/ -v           # Run tests
+```
+
+### 2. Configure credentials (optional)
+
+Live satellite data requires a NASA Earthdata API token. Without it, the pipeline uses synthetic fallback data — perfectly fine for development and exploring the dashboard.
+
+To use real data:
+
+1. Create a free account at [NASA Earthdata Login](https://urs.earthdata.nasa.gov/)
+2. Go to **My Profile > Generate Token** to get an API key
+3. Create a `.env` file in the project root:
+
+```bash
+EARTHDATA_USERNAME='your_username'
+NASA_API_KEY='your_api_token'
+```
+
+> Tokens expire periodically. If fetches start failing, generate a new token from your Earthdata profile.
+
+### 3. Run the pipeline
+
+```bash
+python -m pipeline.export            # Fetch data, process, and export JSON to docs/data/
+```
+
+This runs the full pipeline: fetch GRACE-FO + GPM + population data, compute trends and statistics, and write JSON files to `docs/data/`.
+
+You can also run individual stages:
+
+```bash
+python -m pipeline.fetch_grace       # Fetch GRACE-FO water storage data
+python -m pipeline.fetch_gpm         # Fetch GPM precipitation data
+python -m pipeline.fetch_population  # Generate population grid
+python -m pipeline.process           # Process all fetched data
+```
+
+### 4. View the dashboard
+
+```bash
+python -m http.server 8000 --directory docs
+```
+
+Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+### 5. Run tests
+
+```bash
+pip install -r requirements-dev.txt  # Install test dependencies (pytest, ruff)
+python -m pytest tests/ -v
 ```
 
 ## Architecture
