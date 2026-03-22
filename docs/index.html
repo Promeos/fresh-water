@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fresh Water Monitor | US Water Security Dashboard</title>
+    <meta name="description" content="Satellite-based freshwater monitoring dashboard tracking water storage changes and human impact across the United States.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Dashboard styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>Fresh Water <span>Monitor</span></h1>
+            <div class="header-meta">
+                <div id="date-range">Loading...</div>
+                <div id="last-updated"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- Headline Metrics -->
+        <section class="headline-grid">
+            <div class="metric-card">
+                <div class="metric-label">Regional Population</div>
+                <div class="metric-value" id="metric-population">--</div>
+                <div class="metric-detail" id="metric-population-detail"></div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Affected by Decline</div>
+                <div class="metric-value" id="metric-affected">--</div>
+                <div class="metric-detail" id="metric-affected-detail"></div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Severe Decline Zone</div>
+                <div class="metric-value" id="metric-severe">--</div>
+                <div class="metric-detail" id="metric-severe-detail"></div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Storage Trend</div>
+                <div class="metric-value" id="metric-trend">--</div>
+                <div class="metric-detail" id="metric-trend-detail"></div>
+            </div>
+        </section>
+
+        <!-- Time Series Charts -->
+        <section class="chart-grid">
+            <div class="chart-card">
+                <h2>Water Storage Anomaly <span class="subtitle">GRACE/GRACE-FO satellite gravimetry</span></h2>
+                <div id="chart-tws" class="loading" style="height: 300px;"></div>
+            </div>
+            <div class="chart-card">
+                <h2>Precipitation <span class="subtitle">GPM IMERG monthly estimates</span></h2>
+                <div id="chart-precip" class="loading" style="height: 300px;"></div>
+            </div>
+        </section>
+
+        <!-- Spatial Map -->
+        <section class="chart-grid">
+            <div class="chart-card full-width">
+                <h2>Where Is Water Disappearing? <span class="subtitle">County-level water storage trends from NASA GRACE-FO satellites (2002–present) · hover for details</span></h2>
+                <div id="chart-spatial" class="loading" style="height: 600px;"></div>
+            </div>
+        </section>
+
+        <!-- State Impact Table -->
+        <section class="chart-grid">
+            <div class="chart-card full-width">
+                <h2>State-Level Impact Analysis <span class="subtitle">Population, water trends, and stress classification</span></h2>
+                <table class="state-table">
+                    <thead>
+                        <tr>
+                            <th>State</th>
+                            <th>Population</th>
+                            <th>Water Trend</th>
+                            <th>Precip Change</th>
+                            <th>Status</th>
+                            <th>Trend (2002-Present)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="state-tbody">
+                        <tr><td colspan="6" class="loading">Loading state data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div>
+            Data Sources: GRACE/GRACE-FO JPL Mascon RL06.1 | GPM IMERG V07 | US Census Bureau
+        </div>
+        <div>
+            Built by <a href="https://github.com/Promeos" target="_blank" rel="noopener">Promeos</a> |
+            Satellite data provided by NASA, ESA, and partner agencies
+        </div>
+    </footer>
+
+    <!-- Dashboard JS -->
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

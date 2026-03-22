@@ -1,0 +1,63 @@
+cff-version: 1.2.0
+title: Fresh Water Monitor
+message: >-
+  If you use this software or its data outputs, please cite it
+  using the metadata from this file.
+type: software
+authors:
+  - alias: Promeos
+    url: https://github.com/Promeos
+repository-code: https://github.com/Promeos/fresh-water
+url: https://promeos.github.io/fresh-water/
+keywords:
+  - freshwater
+  - water-security
+  - satellite-data
+  - GRACE-FO
+  - GPM
+  - hydrology
+  - dashboard
+license: CC-BY-4.0
+references:
+  - type: data
+    title: >-
+      GRACE/GRACE-FO Mascon Ocean, Ice, and Hydrology Equivalent
+      Water Height Coastal Resolution Improvement (CRI) Filtered
+      Release 06.1 Version 03
+    authors:
+      - name: NASA Jet Propulsion Laboratory
+    url: https://podaac.jpl.nasa.gov/
+    notes: >-
+      GRACE/GRACE-FO terrestrial water storage anomaly data used
+      for trend analysis.
+  - type: data
+    title: >-
+      GPM IMERG Final Precipitation L3 1 month 0.1 degree x 0.1
+      degree V07
+    authors:
+      - name: NASA Goddard Earth Sciences Data and Information Services Center
+    url: https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGM_07/summary
+    notes: >-
+      Monthly precipitation estimates. Data retrieved from NASA GES DISC
+      are subject to the NASA GES DISC Data Policy
+      (https://disc.gsfc.nasa.gov/information/documents?title=data-policy).
+  - type: data
+    title: US Census Bureau Population Estimates
+    authors:
+      - name: United States Census Bureau
+    url: https://www.census.gov/
+  - type: data
+    title: WorldPop Gridded Population Estimates
+    authors:
+      - name: WorldPop, University of Southampton
+    url: https://www.worldpop.org/
+  - type: data
+    title: Copernicus Sentinel Data
+    authors:
+      - name: European Space Agency
+      - name: European Commission
+    notes: >-
+      Contains modified Copernicus Sentinel data (2002-2025).
+      Access and use regulated under EU Regulation No 1159/2013.
+      Free, full, and open access per the Copernicus Sentinel
+      Data Terms (https://sentinels.copernicus.eu/web/sentinel/terms-conditions).

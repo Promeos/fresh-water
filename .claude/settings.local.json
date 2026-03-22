@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/christopherortiz/.ssh/**)",
+      "Read(//Users/christopherortiz/.claude/memory/**)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)"
+    ]
+  }
+}

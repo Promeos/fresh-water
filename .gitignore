@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+pipeline/raw_data/
+*.nc
+.env
+.venv/
