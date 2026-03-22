@@ -1,4 +1,4 @@
-# Fresh Water Monitor
+# Fresh Water Monitor: Satellite-Based Water Storage Tracking for the United States
 
 Satellite-based freshwater monitoring for the United States. Combines NASA GRACE-FO terrestrial water storage (TWS), GPM IMERG precipitation, and US Census population data to show how water availability is changing and what that means for people in affected regions.
 
