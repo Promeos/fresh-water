@@ -1,6 +1,6 @@
 # Fresh Water Monitor
 
-Satellite-based freshwater monitoring for the Western US. Combines GRACE-FO terrestrial water storage, GPM precipitation, and US Census population data to show how water availability is changing and what that means for people in affected regions. Deployed as a static GitHub Pages dashboard.
+Satellite-based freshwater monitoring for the United States. Combines GRACE-FO terrestrial water storage, GPM precipitation, and US Census population data to show how water availability is changing and what that means for people in affected regions. Deployed as a static GitHub Pages dashboard at https://promeos.github.io/fresh-water/.
 
 ## Architecture
 
@@ -21,6 +21,9 @@ fresh-water/
   .github/workflows/      # CI/CD
   tests/                  # pytest test suite
   requirements.txt        # numpy, pandas, xarray, netCDF4, h5py, requests, plotly, scipy
+  requirements-dev.txt    # pytest, ruff (dev/test dependencies)
+  CITATION.cff            # Citation metadata (CC-BY-4.0 license)
+  .env                    # NASA Earthdata credentials (not committed)
 ```
 
 ## Commands
@@ -73,10 +76,19 @@ Pipeline outputs 4 JSON files to `docs/data/`:
 - Cards: `border-radius: 12px`, `border: 1px solid var(--border)`
 - Responsive breakpoint at 768px
 
+## Deployment
+
+- GitHub Pages serves from `docs/` on the `master` branch
+- Live at https://promeos.github.io/fresh-water/
+- Any push to `master` that changes `docs/` triggers a Pages rebuild
+- Credentials: `.env` with `EARTHDATA_USERNAME` and `NASA_API_KEY` for live satellite data
+
 ## Important Notes
 
 - Each fetcher has a **synthetic fallback** — no NASA Earthdata credentials needed for development
 - `docs/data/` is the bridge between pipeline and frontend: pipeline writes here, frontend reads
-- The 11 Western US states are defined in `pipeline/config.py:STATES`
+- All 50 US states are defined in `pipeline/config.py` with Census 2023 population estimates
 - Water stress thresholds: severe (< -1.5 cm/yr TWS decline), moderate (< -0.5), stable (>= -0.5)
 - Grid resolution: 0.5 degrees over Western US bounding box (31-49°N, 125-104°W)
+- License: CC-BY-4.0 — attribution required for redistribution
+- NASA Earthdata tokens expire periodically; regenerate from Earthdata profile if fetches fail
